@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import os
-from utils.multiagent_backend import run_fba_crew
-from utils.memory import get_last_interactions
-from utils.google_sheets import export_to_csv
+from fba_assistant.utils.multiagent_backend import run_fba_crew
+from fba_assistant.utils.memory import get_last_interactions
+from fba_assistant.utils.google_sheets import export_to_csv
 
 st.set_page_config(page_title="FBA Assistant Autogen", layout="wide")
 st.title("🤖 FBA Assistant - Autogen Crew")
