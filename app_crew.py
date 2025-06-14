@@ -1,44 +1,51 @@
 import streamlit as st
-import pandas as pd
 import os
 from fba_assistant.utils.multiagent_backend import run_fba_crew
 from fba_assistant.utils.memory import get_last_interactions
 from fba_assistant.utils.google_sheets import export_to_csv
 
-st.set_page_config(page_title="FBA Assistant Autogen", layout="wide")
-st.title("🤖 FBA Assistant - Autogen Crew")
-
-st.markdown("Lance une recherche de niches FBA automatiquement à l’aide d’agents LLM intelligents.")
-
-# Formulaire pour lancer un nouveau run
-with st.form("run_form"):
-    user_input = st.text_input("💬 Que veux-tu rechercher ?", value="Trouve-moi une idée de produit Amazon FBA")
-    submitted = st.form_submit_button("🚀 Lancer les agents")
-    if submitted and user_input:
-        with st.spinner("Les agents collaborent..."):
-            result = run_fba_crew(user_input)
-        st.success("✅ Recherche terminée !")
-        st.text_area("Résultat complet :", value=str(result), height=300)
-
-# Dashboard mémoire
-st.subheader("📚 Historique des interactions")
-mem = get_last_interactions()
-if mem:
-    df = pd.DataFrame(mem, columns=["Question", "Réponse"])
-    st.dataframe(df, use_container_width=True)
-
-    # Export CSV
-    csv = df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        label="📥 Télécharger l'historique en CSV",
-        data=csv,
-        file_name="historique_fba.csv",
-        mime="text/csv"
-    )
+# 🔐 Lecture sécurisée des secrets Streamlit
+if "OPENAI_API_KEY" in st.secrets:
+    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 else:
-    st.info("Aucune interaction enregistrée pour le moment.")
+    st.error("⚠️ Clé OpenAI absente de .streamlit/secrets.toml")
+    st.stop()
 
-# Ajout export Sheets (optionnel)
-if st.button("📤 Exporter vers Google Sheets"):
-    result = export_to_csv()
-    st.success(result if result else "✅ Export vers Google Sheets terminé.")
+st.set_page_config(page_title="FBA Assistant - Autogen Crew", layout="wide")
+
+st.title("🤖 FBA Assistant - Multi-agent LLM Crew")
+st.markdown("Trouvez automatiquement des niches Amazon FBA rentables grâce à une équipe d’agents intelligents.")
+
+# Saisie utilisateur
+user_input = st.text_input("🔍 Quelle niche veux-tu explorer ?", placeholder="ex : Trouve-moi un produit compact entre 20€ et 70€")
+launch_button = st.button("🚀 Lancer l’exploration")
+
+# Résultats
+if launch_button and user_input:
+    with st.spinner("Analyse en cours..."):
+        result = run_fba_crew(user_input)
+        st.success("✅ Analyse terminée")
+        st.write(result)
+
+# Historique
+st.subheader("🧠 Historique des échanges")
+for q, r in get_last_interactions():
+    st.markdown(f"**🗨️ Question :** {q}")
+    st.markdown(f"**🤖 Réponse :** {r}")
+    st.markdown("---")
+
+# Export CSV / Sheets
+st.subheader("📤 Export des résultats")
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("📁 Export CSV"):
+        import pandas as pd
+        data = get_last_interactions()
+        df = pd.DataFrame(data, columns=["Question", "Réponse"])
+        df.to_csv("export_niches.csv", index=False)
+        st.success("✅ Exporté sous export_niches.csv")
+
+with col2:
+    if st.button("📤 Export Google Sheets"):
+        status = export_to_csv()
+        st.info(status)
