@@ -1,6 +1,6 @@
 import os
 from autogen import AssistantAgent, UserProxyAgent, GroupChat, GroupChatManager
-from utils.memory import save_interaction
+from .memory import save_interaction
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
