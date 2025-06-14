@@ -1,0 +1,7 @@
+streamlit
+pyautogen
+openai
+pandas
+matplotlib
+gspread
+oauth2client
