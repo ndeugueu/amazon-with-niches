@@ -14,7 +14,7 @@ else:
 
 st.set_page_config(page_title="FBA Assistant - Autogen Crew", layout="wide")
 
-st.title("🤖 FBA Assistant - Multi-agent LLM Crew")
+st.title("🤖 AMAZON FBA Assistant - Multi-agent LLM Crew")
 st.markdown("Trouvez automatiquement des niches Amazon FBA rentables grâce à une équipe d’agents intelligents.")
 
 # Saisie utilisateur
