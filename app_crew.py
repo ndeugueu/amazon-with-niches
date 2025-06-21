@@ -3,6 +3,7 @@ import os
 from fba_assistant.utils.multiagent_backend import run_fba_crew
 from fba_assistant.utils.memory import get_last_interactions
 from fba_assistant.utils.google_sheets import export_to_csv
+import pandas as pd
 
 # 🔐 Lecture sécurisée des secrets Streamlit
 if "OPENAI_API_KEY" in st.secrets:
