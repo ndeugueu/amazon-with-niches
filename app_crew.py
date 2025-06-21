@@ -25,7 +25,13 @@ if launch_button and user_input:
     with st.spinner("Analyse en cours..."):
         result = run_fba_crew(user_input)
         st.success("✅ Analyse terminée")
-        st.write(result)
+
+        # 🔽 Extraction des lignes par produit (si résultat structuré)
+        lines = str(result).split("\n")
+        clean_lines = [line.strip("-• ") for line in lines if line.strip()]
+        data = {"Propositions": clean_lines}
+        df = pd.DataFrame(data)
+        st.dataframe(df)
 
 # Historique
 st.subheader("🧠 Historique des échanges")
@@ -39,7 +45,6 @@ st.subheader("📤 Export des résultats")
 col1, col2 = st.columns(2)
 with col1:
     if st.button("📁 Export CSV"):
-        import pandas as pd
         data = get_last_interactions()
         df = pd.DataFrame(data, columns=["Question", "Réponse"])
         df.to_csv("export_niches.csv", index=False)
