@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from fba_assistant.utils.multiagent_backend import run_fba_crew
+from fba_assistant.utils.multiagent_backend import run_fba_crew, format_response_as_table
 from fba_assistant.utils.memory import get_last_interactions
 from fba_assistant.utils.google_sheets import export_to_csv
 import pandas as pd
@@ -27,12 +27,19 @@ if launch_button and user_input:
         result = run_fba_crew(user_input)
         st.success("✅ Analyse terminée")
 
-        # 🔽 Extraction des lignes par produit (si résultat structuré)
-        lines = str(result).split("\n")
-        clean_lines = [line.strip("-• ") for line in lines if line.strip()]
-        data = {"Propositions": clean_lines}
-        df = pd.DataFrame(data)
-        st.dataframe(df)
+        table_data = format_response_as_table(str(result))
+        if table_data and len(table_data[0]) == 5:
+            df = pd.DataFrame(table_data, columns=["Produit", "Prix", "Poids", "Amélioration", "Lien produit"])
+            df["Lien produit"] = df["Lien produit"].apply(lambda url: f'<a href="{url}" target="_blank">Voir</a>')
+            st.markdown("### 🧾 Résultats formatés")
+            st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
+        else:
+            # 🔽 Fallback si non structuré
+            lines = str(result).split("\n")
+            clean_lines = [line.strip("-• ") for line in lines if line.strip()]
+            data = {"Propositions": clean_lines}
+            df = pd.DataFrame(data)
+            st.dataframe(df)
 
 # Historique
 st.subheader("🧠 Historique des échanges")

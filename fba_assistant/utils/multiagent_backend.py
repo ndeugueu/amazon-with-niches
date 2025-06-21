@@ -1,6 +1,8 @@
 import os
+import re
 from autogen import AssistantAgent, UserProxyAgent, GroupChat, GroupChatManager
 from .memory import save_interaction
+
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -12,15 +14,24 @@ llm_conf = {
 product_hunter = AssistantAgent(
     name="ProductHunterAgent",
     llm_config=llm_conf,
-    system_message="""Tu es un expert en recherche de produits Amazon FBA. Objectif :
-- Prix de vente entre 20€ et 70€
-- Moins de 1 kg
-- Moins de 1000 avis
-- Demande 500+/mois
-- Facile à améliorer
-- Sans marque dominante
+    system_message="""Vous êtes un expert Amazon FBA.
 
-Propose des idées concrètes et analysées."""
+Votre mission est de trouver des idées de produits rentables à vendre sur Amazon selon les critères suivants :
+
+- Prix entre 20 € et 70 €
+- Poids < 1 kg
+- Moins de 1000 avis sur les concurrents
+- Non électronique
+- Améliorable : packaging, accessoire, différenciation
+
+🧾 Répondez uniquement au format tableau, une ligne par produit :
+
+Produit | Prix | Poids | Amélioration possible | Lien produit
+
+Exemple :
+Presse-ail ergonomique | 22 € | 300 g | Packaging premium et ajout de brosse de nettoyage | https://www.amazon.fr/dp/B07XYZ
+Brosse pour animaux 2-en-1 | 29 € | 450 g | Ajouter recharge + meilleure poignée | https://www.amazon.fr/dp/B08ABC
+"""
 )
 
 sourcing_agent = AssistantAgent(
@@ -46,6 +57,26 @@ user = UserProxyAgent(
     human_input_mode="NEVER",
     code_execution_config={"use_docker": False}
 )
+
+def format_response_as_table(response_text):
+    lines = str(response_text).split("\n")
+    table_data = []
+    for line in lines:
+        if '|' in line:
+            parts = [p.strip() for p in line.split('|')]
+            if len(parts) >= 5:
+                table_data.append(parts[:5])
+        else:
+            match = re.match(r"(.*?)[,|-]+(\d+ ?€)[,|-]+(\d+ ?g)[,|-]+(.*?)[,|-]+(https?://\S+)", line)
+            if match:
+                table_data.append([
+                    match.group(1),
+                    match.group(2),
+                    match.group(3),
+                    match.group(4),
+                    match.group(5),
+                ])
+    return table_data
 
 def run_fba_crew(user_input):
     groupchat = GroupChat(
