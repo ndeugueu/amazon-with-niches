@@ -19,7 +19,7 @@ st.markdown("Trouvez automatiquement des niches Amazon FBA rentables grâce à u
 
 # Saisie utilisateur
 user_input = st.text_input("🔍 Quelle niche veux-tu explorer ?", placeholder="ex : Trouve-moi un produit compact entre 20€ et 70€")
-launch_button = st.button("🚀 Lancer l’exploration")
+launch_button = st.button("🚀 Lancer l’exploration IA")
 
 # Résultats
 if launch_button and user_input:
